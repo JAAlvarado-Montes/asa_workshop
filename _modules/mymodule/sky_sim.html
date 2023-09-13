@@ -75,6 +75,7 @@
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">uniform</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">import</span> <span class="nn">mymodule</span>
 
@@ -100,6 +101,8 @@
                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Central dec (degrees) for the simulation location&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--out&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;catalog.csv&#39;</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;destination for the output catalog&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--logging&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Logging level from (DEBUG, INFO, WARNING, ERROR, CRITICAL)&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parser</span></div>
 
 
@@ -141,11 +144,14 @@
     <span class="k">return</span> <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span></div>
 
 
-<span class="k">def</span> <span class="nf">clip_to_radius</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">clip_to_radius</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;&lt;my module&gt;&quot;</span><span class="p">)):</span>
     <span class="n">output_ras</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">output_decs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">ra_i</span><span class="p">,</span> <span class="n">dec_i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ras</span><span class="p">,</span> <span class="n">decs</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checking </span><span class="si">{</span><span class="n">ra_i</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">dec_i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance </span><span class="si">{</span><span class="p">(</span><span class="n">ra_i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">ra</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">dec_i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">dec</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">ra_i</span> <span class="o">-</span> <span class="n">ra</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">dec_i</span> <span class="o">-</span> <span class="n">dec</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Within 1 degree&quot;</span><span class="p">)</span>
             <span class="n">output_ras</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ra_i</span><span class="p">)</span>
             <span class="n">output_decs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dec_i</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output_ras</span><span class="p">,</span> <span class="n">output_decs</span>
@@ -154,23 +160,40 @@
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">skysim_parser</span><span class="p">()</span>
     <span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">loglevels</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;DEBUG&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+        <span class="s1">&#39;INFO&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+        <span class="s1">&#39;WARNING&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+        <span class="s1">&#39;ERROR&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+        <span class="s1">&#39;CRITICAL&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span>
+    <span class="p">}</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(name)s</span><span class="s2">:</span><span class="si">%(levelname)s</span><span class="s2"> </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">level</span><span class="o">=</span><span class="n">loglevels</span><span class="p">[</span><span class="n">options</span><span class="o">.</span><span class="n">logging</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;sky_sim&quot;</span><span class="p">)</span>
 
     <span class="c1"># if ra/dec are not supplied the use a default value</span>
     <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="p">[</span><span class="n">options</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">dec</span><span class="p">]:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No ra/dec specified, using Andromeda&quot;</span><span class="p">)</span>
         <span class="n">ra_deg</span><span class="p">,</span> <span class="n">dec_deg</span> <span class="o">=</span> <span class="n">get_radec</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ra_deg</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">ra</span>
         <span class="n">dec_deg</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">dec</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using ra/dec </span><span class="si">{</span><span class="n">ra_deg</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">dec_deg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Making </span><span class="si">{</span><span class="n">NSRC</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
     <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span> <span class="o">=</span> <span class="n">make_stars</span><span class="p">(</span><span class="n">ra_deg</span><span class="p">,</span> <span class="n">dec_deg</span><span class="p">)</span>
-    <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span> <span class="o">=</span> <span class="n">clip_to_radius</span><span class="p">(</span><span class="n">ra_deg</span><span class="p">,</span> <span class="n">dec_deg</span><span class="p">,</span> <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Clipping to 1 degree radius&quot;</span><span class="p">)</span>
+    <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span> <span class="o">=</span> <span class="n">clip_to_radius</span><span class="p">(</span><span class="n">ra_deg</span><span class="p">,</span> <span class="n">dec_deg</span><span class="p">,</span> <span class="n">ras</span><span class="p">,</span> <span class="n">decs</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ras</span><span class="p">)</span><span class="si">}</span><span class="s2"> stars within 1 degree of </span><span class="si">{</span><span class="n">ra_deg</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">dec_deg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># now write these to a csv file for use by my other program</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">out</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id,ra,dec&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ras</span><span class="p">)):</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">07d</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">12f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">decs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">12f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 </pre></div>
 
